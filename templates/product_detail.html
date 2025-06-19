@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - E-Commerce Store{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('home') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('home', category=product.category) }}">{{ product.category }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Product Image -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <img src="{{ product.image_url }}" 
+                     class="card-img-top" 
+                     alt="{{ product.name }}"
+                     style="height: 400px; object-fit: cover;">
+            </div>
+        </div>
+
+        <!-- Product Information -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <!-- Category Badge -->
+                    <div class="mb-3">
+                        <span class="badge bg-secondary">{{ product.category }}</span>
+                    </div>
+
+                    <!-- Product Name -->
+                    <h1 class="card-title h2 mb-3">{{ product.name }}</h1>
+
+                    <!-- Price -->
+                    <div class="mb-4">
+                        <span class="h3 text-primary">${{ "%.2f"|format(product.price) }}</span>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <h5>Description</h5>
+                        <p class="card-text">{{ product.description }}</p>
+                    </div>
+
+                    <!-- Product Details -->
+                    <div class="mb-4">
+                        <h5>Product Details</h5>
+                        <ul class="list-unstyled">
+                            <li><strong>Category:</strong> {{ product.category }}</li>
+                            <li><strong>Product ID:</strong> #{{ product.id }}</li>
+                            <li><strong>Availability:</strong> <span class="text-success">In Stock</span></li>
+                        </ul>
+                    </div>
+
+                    <!-- Add to Cart Section -->
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            {% if current_user.is_authenticated %}
+                                <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-4">
+                                            <label for="quantity" class="form-label">Quantity:</label>
+                                            <select class="form-select" id="quantity" name="quantity">
+                                                <option value="1">1</option>
+                                                <option value="2">2</option>
+                                                <option value="3">3</option>
+                                                <option value="4">4</option>
+                                                <option value="5">5</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                                <i class="bi bi-cart-plus"></i> Add to Cart
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            {% else %}
+                                <div class="text-center">
+                                    <p class="text-muted mb-3">Please login to add this item to your cart</p>
+                                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">
+                                        Login to Purchase
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Additional Actions -->
+                    <div class="mt-4">
+                        <div class="row">
+                            <div class="col-6">
+                                <a href="{{ url_for('home') }}" class="btn btn-outline-secondary w-100">
+                                    <i class="bi bi-arrow-left"></i> Continue Shopping
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                {% if current_user.is_authenticated %}
+                                    <a href="{{ url_for('cart') }}" class="btn btn-outline-primary w-100">
+                                        <i class="bi bi-cart"></i> View Cart
+                                    </a>
+                                {% else %}
+                                    <a href="{{ url_for('register') }}" class="btn btn-outline-success w-100">
+                                        <i class="bi bi-person-plus"></i> Register
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3>More from {{ product.category }}</h3>
+            <div class="row row-cols-1 row-cols-md-4 g-4">
+                {% for related_product in related_products %}
+                <div class="col">
+                    <div class="card h-100 product-card">
+                        <div class="position-relative">
+                            <img src="{{ related_product.image_url }}" 
+                                 class="card-img-top product-image" 
+                                 alt="{{ related_product.name }}"
+                                 style="height: 200px; object-fit: cover;">
+                            <div class="position-absolute top-0 end-0 m-2">
+                                <span class="badge bg-primary">${{ "%.2f"|format(related_product.price) }}</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title">{{ related_product.name }}</h6>
+                            <p class="card-text small">{{ related_product.description[:100] }}...</p>
+                            <a href="{{ url_for('product_detail', product_id=related_product.id) }}" 
+                               class="btn btn-sm btn-outline-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

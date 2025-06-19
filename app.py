@@ -74,6 +74,13 @@ def home():
     
     return render_template('home.html', products=products, categories=categories, current_category=category)
 
+@app.route('/product/<int:product_id>')
+def product_detail(product_id):
+    product = Product.query.get_or_404(product_id)
+    # Get related products from the same category (excluding current product)
+    related_products = Product.query.filter_by(category=product.category).filter(Product.id != product.id).limit(4).all()
+    return render_template('product_detail.html', product=product, related_products=related_products)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -119,13 +126,15 @@ def cart():
 @app.route('/add_to_cart/<int:product_id>', methods=['POST'])
 @login_required
 def add_to_cart(product_id):
+    quantity = int(request.form.get('quantity', 1))
     cart_item = CartItem.query.filter_by(user_id=current_user.id, product_id=product_id).first()
     if cart_item:
-        cart_item.quantity += 1
+        cart_item.quantity += quantity
     else:
-        cart_item = CartItem(user_id=current_user.id, product_id=product_id)
+        cart_item = CartItem(user_id=current_user.id, product_id=product_id, quantity=quantity)
         db.session.add(cart_item)
     db.session.commit()
+    flash(f'Added {quantity} item(s) to your cart!')
     return redirect(url_for('cart'))
 
 @app.route('/remove_from_cart/<int:cart_item_id>', methods=['POST'])
